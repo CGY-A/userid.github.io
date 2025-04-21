@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>진위 감정 의뢰 작품 이미지 제출</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px auto; 
+      max-width: 800px;
+      padding: 0 10px;
+    }
+    h1 {
+      text-align: center;
+      color: #5D5CDE;
+    }
+    .upload-section {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px 0;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="file"] {
+      margin: 5px 0 15px 0;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+      box-sizing: border-box;
+    }
+    button {
+      display: block;
+      padding: 10px 20px;
+      background-color: #5D5CDE;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 20px 0;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #4a49b8;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 15px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .success {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: #4CAF50;
+    }
+    .warning {
+      background-color: rgba(255, 152, 0, 0.1);
+      color: #FF9800;
+    }
+    .error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: #F44336;
+    }
+    .preview-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .preview-box {
+      width: 32%;
+      text-align: center;
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 200px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .upload-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f1f1f1;
+      display: none; /* 초기에는 표시하지 않음 */
+    }
+    .metadata-section {
+      background-color: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    /* 업로드 완료 메시지 추가 스타일 */
+    .completion-message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #e8f5e9;
+      text-align: center;
+      display: none;
+    }
+    .completion-icon {
+      font-size: 48px;
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+    .completion-steps {
+      text-align: left;
+      margin-top: 15px;
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .completion-steps p {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>진위 감정 의뢰 작품 이미지 제출</h1>
+  
+  <div class="upload-section">
+    <div class="metadata-section">
+      <h3>작품 정보</h3>
+      
+      <label for="artistName">작가명:</label>
+      <input type="text" id="artistName" placeholder="예: 김화백">
+      
+      <label for="artworkName">작품명:</label>
+      <input type="text" id="artworkName" placeholder="예: 바다풍경">
+    </div>
+    
+    <p>작품 이미지와 등록카드 이미지를 업로드해 주세요.</p>
+    
+    <label for="front">앞면 이미지:</label>
+    <input type="file" id="front" accept="image/*">
+    
+    <label for="back">뒷면 이미지:</label>
+    <input type="file" id="back" accept="image/*">
+    
+    <label for="card">등록카드 이미지:</label>
+    <input type="file" id="card" accept="image/*">
+    
+    <div class="preview-container">
+      <div class="preview-box">
+        <span>앞면 미리보기</span>
+        <img id="preview_front_img" src="" alt="앞면 이미지 미리보기">
+      </div>
+      <div class="preview-box">
+        <span>뒷면 미리보기</span>
+        <img id="preview_back_img" src="" alt="뒷면 이미지 미리보기">
+      </div>
+      <div class="preview-box">
+        <span>등록카드 미리보기</span>
+        <img id="preview_card_img" src="" alt="등록카드 이미지 미리보기">
+      </div>
+    </div>
+    
+    <button id="uploadBtn">이미지 업로드</button>
+    
+    <!-- 초기에는 보이지 않고 업로드 진행 중에만 표시 -->
+    <div class="upload-status" id="uploadStatus"></div>
+  </div>
+  
+  <div class="result" id="result"></div>
+  
+  <!-- 업로드 완료 후 표시될 메시지 -->
+  <div class="completion-message" id="completionMessage">
+    <div class="completion-icon">✅</div>
+    <h2>한국미술품등록센터에 이미지 제출 완료!</h2>
+    <p>업로드된 이미지는 한국미술품등록센터에서 진위 감정 과정에 활용됩니다.</p>
+    
+    <div class="completion-steps">
+      <h3>다음 단계:</h3>
+      <p>1. 센터 내부에서 이미지 분석 및 비교 작업이 진행됩니다. (약 1-2일 소요)</p>
+      <p>2. 진위 감정 결과는 등록된 연락처로 통보됩니다.</p>
+      <p>3. 추가 문의사항은 한국미술품등록센터(02-xxx-xxxx)로 연락 주시기 바랍니다.</p>
+    </div>
+  </div>
+  
+  <!-- Firebase SDK를 바로 사용 가능한 CDN으로 변경 -->
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+  
+  <script>
+    // 전역 변수
+    var frontFile = null;
+    var backFile = null;
+    var cardFile = null;
+    
+    // 이미지 미리보기 설정
+    document.getElementById("front").onchange = function() {
+      frontFile = this.files[0];
+      previewImage(frontFile, "preview_front_img");
+    };
+    
+    document.getElementById("back").onchange = function() {
+      backFile = this.files[0];
+      previewImage(backFile, "preview_back_img");
+    };
+    
+    document.getElementById("card").onchange = function() {
+      cardFile = this.files[0];
+      previewImage(cardFile, "preview_card_img");
+    };
+    
+    // 이미지 미리보기 함수
+    function previewImage(file, previewId) {
+      if (!file) return;
+      
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(previewId).src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // 파일명 정제 함수
+    function sanitizeFileName(name) {
+      if (!name) return "";
+      return name.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_");
+    }
+    
+    // 날짜 시간 포맷 함수
+    function formatDateTime() {
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = (now.getMonth() + 1).toString();
+      if (month.length < 2) month = '0' + month;
+      var day = now.getDate().toString();
+      if (day.length < 2) day = '0' + day;
+      var hours = now.getHours().toString();
+      if (hours.length < 2) hours = '0' + hours;
+      var minutes = now.getMinutes().toString();
+      if (minutes.length < 2) minutes = '0' + minutes;
+      
+      return year + month + day + "_" + hours + minutes;
+    }
+    
+    // 업로드 버튼 이벤트 설정
+    document.getElementById("uploadBtn").onclick = function() {
+      uploadImages();
+    };
+    
+    // Firebase 초기화 및 업로드 함수
+    function uploadImages() {
+      // 입력값 가져오기
+      var artistName = document.getElementById("artistName").value.trim();
+      var artworkName = document.getElementById("artworkName").value.trim();
+      
+      // 입력 검증
+      if (!artistName) {
+        document.getElementById("result").innerText = "❗ 작가명을 입력해주세요.";
+        document.getElementById("result").className = "result error";
+        return;
+      }
+      
+      if (!artworkName) {
+        document.getElementById("result").innerText = "❗ 작품명을 입력해주세요.";
+        document.getElementById("result").className = "result error";
+        return;
+      }
+      
+      if (!frontFile || !backFile || !cardFile) {
+        document.getElementById("result").innerText = "❗ 앞면, 뒷면, 등록카드 이미지를 모두 업로드해주세요.";
+        document.getElementById("result").className = "result error";
+        return;
+      }
+      
+      var uploadBtn = document.getElementById("uploadBtn");
+      var uploadStatus = document.getElementById("uploadStatus");
+      var result = document.getElementById("result");
+      
+      // 업로드 시작
+      uploadBtn.disabled = true;
+      uploadBtn.innerText = "Firebase 초기화 중...";
+      uploadStatus.style.display = "block"; // 업로드 상태 표시 요소를 보이게 함
+      uploadStatus.innerText = "Firebase 초기화 중...";
+      
+      // 비교 결과 초기화
+      document.getElementById("completionMessage").style.display = "none";
+      
+      try {
+        // Firebase 설정 및 초기화
+        firebase.initializeApp({
+          apiKey: "AIzaSyAlA5LfxLrvBjy6PcUie0VA_cUMDtcQ2KM",
+          authDomain: "artguard-a9de3.firebaseapp.com",
+          projectId: "artguard-a9de3", 
+          storageBucket: "artguard-a9de3.firebasestorage.app"
+        });
+        
+        uploadBtn.innerText = "업로드 준비 중...";
+        uploadStatus.innerText = "업로드 준비 중...";
+        
+        // 폴더 경로 생성 - 폴더명을 "진위검증의뢰"로 고정
+        var folderName = "진위검증의뢰";  // 공백 제거
+        var sanitizedArtist = sanitizeFileName(artistName);
+        var sanitizedArtwork = sanitizeFileName(artworkName);
+        var dateTime = formatDateTime();
+        
+        var folderPath = folderName + "/" + sanitizedArtist + "_" + sanitizedArtwork + "_" + dateTime;
+        
+        // 앞면 이미지 업로드
+        uploadBtn.innerText = "이미지 업로드 중...";
+        uploadStatus.innerText = "앞면 이미지 업로드 중...";
+        
+        var frontRef = firebase.storage().ref(folderPath + "/front.jpg");
+        var frontUploadTask = frontRef.put(frontFile);
+        
+        frontUploadTask.on("state_changed", 
+          // 진행 상태
+          function(snapshot) {
+            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            uploadStatus.innerText = "앞면 이미지: " + Math.round(progress) + "% 업로드됨";
+          },
+          // 오류 처리
+          function(error) {
+            console.error("앞면 이미지 업로드 실패:", error);
+            result.innerText = "❌ 앞면 이미지 업로드 실패: " + error.message;
+            result.className = "result error";
+            uploadBtn.disabled = false;
+            uploadBtn.innerText = "이미지 업로드";
+          },
+          // 완료
+          function() {
+            uploadStatus.innerText = "뒷면 이미지 업로드 중...";
+            
+            // 뒷면 이미지 업로드
+            var backRef = firebase.storage().ref(folderPath + "/back.jpg");
+            var backUploadTask = backRef.put(backFile);
+            
+            backUploadTask.on("state_changed",
+              // 진행 상태 
+              function(snapshot) {
+                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                uploadStatus.innerText = "뒷면 이미지: " + Math.round(progress) + "% 업로드됨";
+              },
+              // 오류 처리
+              function(error) {
+                console.error("뒷면 이미지 업로드 실패:", error);
+                result.innerText = "❌ 뒷면 이미지 업로드 실패: " + error.message;
+                result.className = "result error";
+                uploadBtn.disabled = false;
+                uploadBtn.innerText = "이미지 업로드";
+              },
+              // 완료
+              function() {
+                uploadStatus.innerText = "등록카드 이미지 업로드 중...";
+                
+                // 등록카드 이미지 업로드
+                var cardRef = firebase.storage().ref(folderPath + "/registration_card.jpg");
+                var cardUploadTask = cardRef.put(cardFile);
+                
+                cardUploadTask.on("state_changed",
+                  // 진행 상태
+                  function(snapshot) {
+                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    uploadStatus.innerText = "등록카드 이미지: " + Math.round(progress) + "% 업로드됨";
+                  },
+                  // 오류 처리
+                  function(error) {
+                    console.error("등록카드 이미지 업로드 실패:", error);
+                    result.innerText = "❌ 등록카드 이미지 업로드 실패: " + error.message;
+                    result.className = "result error";
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerText = "이미지 업로드";
+                  },
+                  // 완료
+                  function() {
+                    uploadStatus.innerText = "모든 이미지가 업로드됨!";
+                    
+                    // 업로드 성공 메시지 표시
+                    result.innerText = "✅ 한국미술품등록센터에 이미지 제출 완료!";
+                    result.className = "result success";
+                    
+                    // 상세 완료 메시지 표시
+                    document.getElementById("completionMessage").style.display = "block";
+                    
+                    // 버튼 상태 복원
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerText = "이미지 업로드";
+                  }
+                );
+              }
+            );
+          }
+        );
+      } catch (error) {
+        console.error("Firebase 초기화 또는 처리 중 오류:", error);
+        result.innerText = "❌ Firebase 오류: " + error.message;
+        result.className = "result error";
+        uploadBtn.disabled = false;
+        uploadBtn.innerText = "이미지 업로드";
+      }
+    }
+  </script>
+</body>
+</html>
